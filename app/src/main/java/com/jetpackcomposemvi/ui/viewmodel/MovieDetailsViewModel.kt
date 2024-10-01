@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jetpackcomposemvi.intent.UiAction
-import com.jetpackcomposemvi.domain.usecase.GetMovieDetailsUseCase
 import com.jetpackcomposemvi.domain.usecase.MovieDetailResult
+import com.jetpackcomposemvi.intent.UiAction
+import com.jetpackcomposemvi.ui.usecase.GetMovieDetailsUseCase
 import com.movies.ui.model.MovieDetailUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -31,14 +31,6 @@ class MovieDetailsViewModel @Inject constructor(
 
     fun performActions(action: UiAction) {
         when (action) {
-//            UiAction.FetchTopRatedMovies -> {
-//                viewModelScope.launch(movieExceptionHandler) {
-//                    withContext(Dispatchers.IO) {
-//                        val results = movieRepository.fetchTopRatedMovies()
-//                        handleMovieListResult(results)
-//                    }
-//                }
-//            }
             is UiAction.FetchMovieDetails -> {
                 viewModelScope.launch(movieExceptionHandler) {
                     withContext(Dispatchers.IO) {

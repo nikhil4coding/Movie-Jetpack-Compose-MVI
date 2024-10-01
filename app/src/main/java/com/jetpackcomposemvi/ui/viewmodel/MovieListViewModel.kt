@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jetpackcomposemvi.intent.UiAction
-import com.jetpackcomposemvi.domain.usecase.GetMovieListUseCase
 import com.jetpackcomposemvi.domain.usecase.MovieListResult
+import com.jetpackcomposemvi.intent.UiAction
+import com.jetpackcomposemvi.ui.usecase.GetMovieListUseCase
 import com.movies.ui.model.MovieDetailUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -53,29 +53,6 @@ class MovieListViewModel @Inject constructor(
             }
 
             else -> {}
-        }
-    }
-
-    // get movie list
-    fun getMovieList() {
-        movieListViewStateEmitter.postValue(MovieListViewState.Loading)
-        viewModelScope.launch(movieExceptionHandler) {
-            withContext(Dispatchers.IO) {
-                when (val results = getMovieListUseCase.getTopRatedMovieList()) {
-                    is MovieListResult.Error -> movieListViewStateEmitter.postValue(MovieListViewState.Error(results.errorCode))
-                    is MovieListResult.Success -> {
-                        val movieList = results.movieDetail.map {
-                            MovieDetailUI(
-                                id = it.id,
-                                title = it.title,
-                                overview = it.overview,
-                                posterPath = it.posterPath
-                            )
-                        }
-                        movieListViewStateEmitter.postValue(MovieListViewState.MovieList(movieList))
-                    }
-                }
-            }
         }
     }
 

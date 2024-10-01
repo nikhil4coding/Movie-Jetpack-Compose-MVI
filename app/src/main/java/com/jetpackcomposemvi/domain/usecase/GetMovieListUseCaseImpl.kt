@@ -3,14 +3,15 @@ package com.jetpackcomposemvi.domain.usecase
 import com.jetpackcomposemvi.data.MovieListResponse
 import com.jetpackcomposemvi.domain.MovieRepository
 import com.jetpackcomposemvi.domain.model.MovieDetail
+import com.jetpackcomposemvi.ui.usecase.GetMovieListUseCase
 import javax.inject.Inject
 
-class GetMovieListUseCase @Inject constructor(
+internal class GetMovieListUseCaseImpl @Inject constructor(
     private val movieRepository: MovieRepository
-) {
+) : GetMovieListUseCase {
 
     //Business logic comes here
-    suspend fun getTopRatedMovieList(): MovieListResult {
+    override suspend fun getTopRatedMovieList(): MovieListResult {
         return when (val response = movieRepository.fetchTopRatedMovies()) {
             is MovieListResponse.Error -> MovieListResult.Error(response.errorCode)
             is MovieListResponse.Success -> {

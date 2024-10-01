@@ -5,8 +5,9 @@ import com.jetpackcomposemvi.data.MovieListResponse
 import com.jetpackcomposemvi.data.MovieListResponseDTO
 import com.jetpackcomposemvi.domain.MovieRepository
 import com.jetpackcomposemvi.domain.model.MovieDetail
-import com.jetpackcomposemvi.domain.usecase.GetMovieListUseCase
+import com.jetpackcomposemvi.domain.usecase.GetMovieListUseCaseImpl
 import com.jetpackcomposemvi.domain.usecase.MovieListResult
+import com.jetpackcomposemvi.ui.usecase.GetMovieListUseCase
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import junit.framework.Assert.assertEquals
@@ -14,14 +15,14 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
-class GetMovieListUseCaseTest {
+class GetMovieListUseCaseImplTest {
 
     private val repository: MovieRepository = mock()
     private lateinit var useCase: GetMovieListUseCase
 
     @Before
     fun setUp() {
-        useCase = GetMovieListUseCase(repository)
+        useCase = GetMovieListUseCaseImpl(repository)
     }
 
     @Test
