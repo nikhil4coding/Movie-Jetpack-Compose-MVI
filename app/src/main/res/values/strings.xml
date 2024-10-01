@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Jetpack Compose MVI</string>
+    <string name="error">Error: %1$s</string>
+    <string name="top_rated_movies">Top rated Movies</string>
+    <string name="https_image_url">https://image.tmdb.org/t/p/w500%1$s</string>
+    <string name="back_button">Back Button</string>
+</resources>
