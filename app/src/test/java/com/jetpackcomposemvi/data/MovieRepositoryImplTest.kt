@@ -1,6 +1,7 @@
 package com.jetpackcomposemvi.data
 
 import com.jetpackcomposemvi.data.api.MovieService
+import com.jetpackcomposemvi.data.cache.MovieSharedPref
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import junit.framework.Assert.assertEquals
@@ -13,20 +14,22 @@ import retrofit2.Response
 class MovieRepositoryImplTest {
 
     private val movieService: MovieService = mock()
+    private val movieSharedPref: MovieSharedPref = mock()
 
     private lateinit var repository: MovieRepositoryImpl
 
     @Before
     fun setUp() {
-        repository = MovieRepositoryImpl(movieService)
+        repository = MovieRepositoryImpl(movieService, movieSharedPref)
     }
 
     @Test
     fun `when fetch TopRated Movies returns empty list`() = runTest {
-        whenever(movieService.topRated()).thenReturn(Response.success(MovieListResponseDTO(emptyList())))
+        whenever(movieService.topRated(1)).thenReturn(Response.success(MovieListResponseDTO(emptyList())))
+        whenever(movieSharedPref.getMovieList("1")).thenReturn(null)
 
         launch {
-            val result = repository.fetchTopRatedMovies()
+            val result = repository.fetchTopRatedMovies(1)
             assertEquals(MovieListResponse.Success(MovieListResponseDTO(emptyList())), result)
         }
     }
@@ -44,10 +47,11 @@ class MovieRepositoryImplTest {
                 )
             )
         )
-        whenever(movieService.topRated()).thenReturn(Response.success(movieListResponseDTO))
+        whenever(movieService.topRated(1)).thenReturn(Response.success(movieListResponseDTO))
+        whenever(movieSharedPref.getMovieList("1")).thenReturn(null)
 
         launch {
-            val result = repository.fetchTopRatedMovies()
+            val result = repository.fetchTopRatedMovies(1)
             assertEquals(MovieListResponse.Success(movieListResponseDTO), result)
         }
     }
@@ -62,10 +66,10 @@ class MovieRepositoryImplTest {
         )
 
         val movieId = 123L
-        whenever(movieService.movieDetails(movieId)).thenReturn(Response.success(movieDto))
+        whenever(movieService.movieDetails(movieId.toString())).thenReturn(Response.success(movieDto))
 
         launch {
-            val result = repository.fetchMovieDetails(movieId)
+            val result = repository.fetchMovieDetails(movieId.toString())
             assertEquals(MovieDetailResponse.Success(movieDto), result)
         }
     }

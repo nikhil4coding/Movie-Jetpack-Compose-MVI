@@ -26,17 +26,17 @@ class GetMovieListUseCaseTest {
 
     @Test
     fun `get movie list returns error return error`() = runTest {
-        whenever(repository.fetchTopRatedMovies()).thenReturn(MovieListResponse.Error("error"))
+        whenever(repository.fetchTopRatedMovies(1)).thenReturn(MovieListResponse.Error("error"))
 
-        val result = useCase.getTopRatedMovieList()
+        val result = useCase.getTopRatedMovieList(1)
         assertEquals(MovieListResult.Error("error"), result)
     }
 
     @Test
     fun `get movie list returns empty list return list`() = runTest {
-        whenever(repository.fetchTopRatedMovies()).thenReturn(MovieListResponse.Success(MovieListResponseDTO(emptyList())))
+        whenever(repository.fetchTopRatedMovies(1)).thenReturn(MovieListResponse.Success(MovieListResponseDTO(emptyList())))
 
-        val result = useCase.getTopRatedMovieList()
+        val result = useCase.getTopRatedMovieList(1)
         assertEquals(MovieListResult.Success(emptyList()), result)
     }
 
@@ -60,9 +60,9 @@ class GetMovieListUseCaseTest {
                 posterPath = "movie.jpg"
             )
         )
-        whenever(repository.fetchTopRatedMovies()).thenReturn(MovieListResponse.Success(movieListResponseDTO))
+        whenever(repository.fetchTopRatedMovies(1)).thenReturn(MovieListResponse.Success(movieListResponseDTO))
 
-        val result = useCase.getTopRatedMovieList()
+        val result = useCase.getTopRatedMovieList(1)
         assertEquals(MovieListResult.Success(expected), result)
     }
 }
