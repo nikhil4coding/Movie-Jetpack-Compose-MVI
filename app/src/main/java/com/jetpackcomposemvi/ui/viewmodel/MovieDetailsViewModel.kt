@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jetpackcomposemvi.domain.usecase.ErrorResult
 import com.jetpackcomposemvi.domain.usecase.GetMovieDetailsUseCase
 import com.jetpackcomposemvi.domain.usecase.MovieDetailResult
 import com.jetpackcomposemvi.intent.UiAction
@@ -35,7 +36,14 @@ class MovieDetailsViewModel @Inject constructor(
                 viewModelScope.launch(movieExceptionHandler) {
                     withContext(Dispatchers.IO) {
                         when (val result = getMovieDetailsUseCase.getMovieDetails(action.movieId)) {
-                            is MovieDetailResult.Error -> movieDetailViewStateEmitter.postValue(MovieDetailViewState.Error(result.errorCode))
+                            is MovieDetailResult.Error -> movieDetailViewStateEmitter.postValue(
+                                when (result.errorCode) {
+                                    ErrorResult.NULL_RESPONSE -> MovieDetailViewState.ErrorUi.EmptyList
+                                    ErrorResult.RESPONSE_FAILURE -> MovieDetailViewState.ErrorUi.Failure
+                                }
+
+                            )
+
                             is MovieDetailResult.Success -> {
                                 val movieDetailUI = MovieDetailUI(
                                     id = result.movieDetail.id,
@@ -57,6 +65,9 @@ class MovieDetailsViewModel @Inject constructor(
     sealed interface MovieDetailViewState {
         data object Loading : MovieDetailViewState
         data class Movie(val data: MovieDetailUI, val isLoading: Boolean = false) : MovieDetailViewState
-        data class Error(val errorCode: String) : MovieDetailViewState
+        sealed interface ErrorUi : MovieDetailViewState {
+            data object EmptyList : ErrorUi
+            data object Failure : ErrorUi
+        }
     }
 }

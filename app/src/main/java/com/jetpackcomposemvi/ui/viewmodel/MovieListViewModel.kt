@@ -1,9 +1,8 @@
 package com.jetpackcomposemvi.ui.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jetpackcomposemvi.domain.usecase.ErrorResult
 import com.jetpackcomposemvi.domain.usecase.GetMovieListUseCase
 import com.jetpackcomposemvi.domain.usecase.MovieListResult
 import com.jetpackcomposemvi.intent.UiAction
@@ -45,7 +44,12 @@ class MovieListViewModel @Inject constructor(
                 viewModelScope.launch(movieExceptionHandler) {
                     withContext(Dispatchers.IO) {
                         when (val results = getMovieListUseCase.getTopRatedMovieList(currentPage)) {
-                            is MovieListResult.Error -> movieListViewStateEmitter.value = MovieListViewState.Error(results.errorCode)
+                            is MovieListResult.Error -> movieListViewStateEmitter.value =
+                                when (results.errorCode) {
+                                    ErrorResult.NULL_RESPONSE -> MovieListViewState.ErrorUi.EmptyDetails
+                                    ErrorResult.RESPONSE_FAILURE -> MovieListViewState.ErrorUi.Failure
+                                }
+
                             is MovieListResult.Success -> {
                                 val movieList = results.movieDetail.map {
                                     MovieDetailUI(
@@ -55,7 +59,7 @@ class MovieListViewModel @Inject constructor(
                                         posterPath = it.posterPath
                                     )
                                 }
-                                currentPage ++
+                                currentPage++
                                 val finalList = completeMovieList + movieList
                                 completeMovieList = finalList
                                 movieListViewStateEmitter.value = MovieListViewState.MovieList(finalList)
@@ -72,6 +76,9 @@ class MovieListViewModel @Inject constructor(
     sealed interface MovieListViewState {
         data object Loading : MovieListViewState
         data class MovieList(val data: List<MovieDetailUI>, val isLoading: Boolean = false) : MovieListViewState
-        data class Error(val errorCode: String) : MovieListViewState
+        sealed interface ErrorUi : MovieListViewState {
+            data object EmptyDetails : ErrorUi
+            data object Failure : ErrorUi
+        }
     }
 }

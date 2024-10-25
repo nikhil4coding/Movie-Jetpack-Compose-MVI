@@ -25,9 +25,9 @@ internal class MovieRepositoryImpl @Inject constructor(
                     val movieListStr = Gson().toJson(it)
                     movieSharedPref.updateMovieList(pageNumber.toString(), movieListStr)
                     MovieListResponse.Success(it)
-                } ?: MovieListResponse.Error("Null List")
+                } ?: MovieListResponse.Error(ErrorResponse.NULL_RESPONSE)
             } else {
-                MovieListResponse.Error("Something went Wrong")
+                MovieListResponse.Error(ErrorResponse.RESPONSE_FAILURE)
             }
         }
     }
@@ -37,19 +37,24 @@ internal class MovieRepositoryImpl @Inject constructor(
         return if (response.isSuccessful) {
             response.body()?.let {
                 MovieDetailResponse.Success(it)
-            } ?: MovieDetailResponse.Error("No details found")
+            } ?: MovieDetailResponse.Error(ErrorResponse.NULL_RESPONSE)
         } else {
-            MovieDetailResponse.Error("Something went Wrong")
+            MovieDetailResponse.Error(ErrorResponse.RESPONSE_FAILURE)
         }
     }
 }
 
+
+enum class ErrorResponse{
+    NULL_RESPONSE,
+    RESPONSE_FAILURE
+}
 sealed interface MovieListResponse {
     data class Success(val data: MovieListResponseDTO) : MovieListResponse
-    data class Error(val errorCode: String) : MovieListResponse
+    data class Error(val errorCode: ErrorResponse) : MovieListResponse
 }
 
 sealed interface MovieDetailResponse {
     data class Success(val data: MovieDetailDTO) : MovieDetailResponse
-    data class Error(val errorCode: String) : MovieDetailResponse
+    data class Error(val errorCode: ErrorResponse) : MovieDetailResponse
 }

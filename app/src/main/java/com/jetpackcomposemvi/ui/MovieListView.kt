@@ -57,11 +57,17 @@ fun MovieListView(
     var isLoading: Boolean by rememberSaveable { mutableStateOf(false) }
     var movieList: List<MovieDetailUI> by rememberSaveable { mutableStateOf(emptyList()) }
     when (viewState) {
-        is MovieListViewModel.MovieListViewState.Error -> Toast.makeText(
-            LocalContext.current,
-            stringResource(R.string.error, (viewState as MovieListViewModel.MovieListViewState.Error).errorCode),
-            Toast.LENGTH_SHORT
-        ).show()
+        is MovieListViewModel.MovieListViewState.ErrorUi -> {
+            val errorStr = when (viewState as MovieListViewModel.MovieListViewState.ErrorUi) {
+                MovieListViewModel.MovieListViewState.ErrorUi.EmptyDetails -> stringResource(R.string.no_data_found)
+                MovieListViewModel.MovieListViewState.ErrorUi.Failure -> stringResource(R.string.call_to_retrieve_data_failed)
+            }
+            Toast.makeText(
+                LocalContext.current,
+                stringResource(R.string.error, errorStr),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
 
         is MovieListViewModel.MovieListViewState.Loading -> isLoading = true
         is MovieListViewModel.MovieListViewState.MovieList -> {

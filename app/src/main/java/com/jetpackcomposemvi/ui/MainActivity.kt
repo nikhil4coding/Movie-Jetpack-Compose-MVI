@@ -48,15 +48,17 @@ class MainActivity : ComponentActivity() {
             }
 
             composable("movie_detail/{movieId}") {
-                val movieId = it.arguments?.getString("movieId" , ) ?: ""
-                val viewModel: MovieDetailsViewModel by viewModels()
-                viewModel.performActions(UiAction.FetchMovieDetails(movieId))
-                MovieDetailsView(
-                    viewState = viewModel.movieDetailViewState.observeAsState().value,
-                    onBackClicked = {
-                        navController.popBackStack()
-                    }
-                )
+                val movieId = it.arguments?.getString("movieId")
+                movieId?.let {
+                    val viewModel: MovieDetailsViewModel by viewModels()
+                    viewModel.performActions(UiAction.FetchMovieDetails(movieId))
+                    MovieDetailsView(
+                        viewState = viewModel.movieDetailViewState.observeAsState().value,
+                        onBackClicked = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
             }
         }
     }

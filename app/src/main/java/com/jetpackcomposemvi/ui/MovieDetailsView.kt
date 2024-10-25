@@ -23,7 +23,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -49,15 +48,20 @@ import com.movies.ui.model.MovieDetailUI
 @Composable
 fun MovieDetailsView(
     viewState: MovieDetailsViewModel.MovieDetailViewState?,
-//    isLoading: Boolean,
-//    movieDetails: MovieDetailUI,
     onBackClicked: () -> Unit,
 ) {
     var movieDetails: MovieDetailUI by rememberSaveable { mutableStateOf(MovieDetailUI()) }
     var isLoading: Boolean by rememberSaveable { mutableStateOf(false) }
 
     when (viewState) {
-        is MovieDetailsViewModel.MovieDetailViewState.Error -> Toast.makeText(LocalContext.current, stringResource(R.string.error, viewState.errorCode), Toast.LENGTH_SHORT).show()
+        is MovieDetailsViewModel.MovieDetailViewState.ErrorUi -> {
+            val errorStr = when (viewState) {
+                MovieDetailsViewModel.MovieDetailViewState.ErrorUi.EmptyList -> stringResource(R.string.empty_list)
+                MovieDetailsViewModel.MovieDetailViewState.ErrorUi.Failure -> stringResource(R.string.call_to_retrieve_data_failed)
+            }
+            Toast.makeText(LocalContext.current, stringResource(R.string.error, errorStr), Toast.LENGTH_SHORT).show()
+        }
+
         is MovieDetailsViewModel.MovieDetailViewState.Loading -> isLoading = true
         is MovieDetailsViewModel.MovieDetailViewState.Movie -> {
             isLoading = viewState.isLoading
