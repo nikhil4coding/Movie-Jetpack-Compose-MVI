@@ -35,11 +35,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.jetpackcomposemvi.R
 import com.jetpackcomposemvi.ui.viewmodel.MovieDetailsViewModel
 import com.movies.ui.model.MovieDetailUI
+import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -47,15 +49,16 @@ import com.movies.ui.model.MovieDetailUI
 )
 @Composable
 fun MovieDetailsView(
-    viewState: MovieDetailsViewModel.MovieDetailViewState?,
+    viewStateFlow: StateFlow<MovieDetailsViewModel.MovieDetailViewState>,
     onBackClicked: () -> Unit,
 ) {
     var movieDetails: MovieDetailUI by rememberSaveable { mutableStateOf(MovieDetailUI()) }
     var isLoading: Boolean by rememberSaveable { mutableStateOf(false) }
+    val viewState by viewStateFlow.collectAsStateWithLifecycle()
 
     when (viewState) {
         is MovieDetailsViewModel.MovieDetailViewState.ErrorUi -> {
-            val errorStr = when (viewState) {
+            val errorStr = when (viewState as MovieDetailsViewModel.MovieDetailViewState.ErrorUi) {
                 MovieDetailsViewModel.MovieDetailViewState.ErrorUi.EmptyList -> stringResource(R.string.empty_list)
                 MovieDetailsViewModel.MovieDetailViewState.ErrorUi.Failure -> stringResource(R.string.call_to_retrieve_data_failed)
             }
@@ -64,11 +67,9 @@ fun MovieDetailsView(
 
         is MovieDetailsViewModel.MovieDetailViewState.Loading -> isLoading = true
         is MovieDetailsViewModel.MovieDetailViewState.Movie -> {
-            isLoading = viewState.isLoading
-            movieDetails = viewState.data
+            isLoading = (viewState as MovieDetailsViewModel.MovieDetailViewState.Movie).isLoading
+            movieDetails = (viewState as MovieDetailsViewModel.MovieDetailViewState.Movie).data
         }
-
-        null -> {}
     }
 
     Scaffold(

@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -14,9 +14,13 @@ import com.jetpackcomposemvi.intent.UiAction
 import com.jetpackcomposemvi.ui.viewmodel.MovieDetailsViewModel
 import com.jetpackcomposemvi.ui.viewmodel.MovieListViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val detailedViewModel: MovieDetailsViewModel by viewModels()
+    private val movieListViewModel: MovieListViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +40,6 @@ class MainActivity : ComponentActivity() {
             startDestination = "movie_list"
         ) {
             composable("movie_list") {
-                val movieListViewModel: MovieListViewModel by viewModels()
                 MovieListView(
                     viewStateFlow = movieListViewModel.viewState,
                     onMovieClicked = {
@@ -50,14 +53,14 @@ class MainActivity : ComponentActivity() {
             composable("movie_detail/{movieId}") {
                 val movieId = it.arguments?.getString("movieId")
                 movieId?.let {
-                    val viewModel: MovieDetailsViewModel by viewModels()
-                    viewModel.performActions(UiAction.FetchMovieDetails(movieId))
                     MovieDetailsView(
-                        viewState = viewModel.movieDetailViewState.observeAsState().value,
-                        onBackClicked = {
-                            navController.popBackStack()
-                        }
-                    )
+                        viewStateFlow = detailedViewModel.movieDetailViewState
+                    ) {
+                        navController.popBackStack()
+                    }
+                    LaunchedEffect(movieId) {
+                        detailedViewModel.performActions(UiAction.FetchMovieDetails(movieId))
+                    }
                 }
             }
         }

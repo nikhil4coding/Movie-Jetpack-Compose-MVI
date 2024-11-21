@@ -1,7 +1,5 @@
 package com.jetpackcomposemvi.ui.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jetpackcomposemvi.domain.usecase.ErrorResult
@@ -12,6 +10,8 @@ import com.movies.ui.model.MovieDetailUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -23,8 +23,8 @@ class MovieDetailsViewModel @Inject constructor(
     private val getMovieDetailsUseCase: GetMovieDetailsUseCase,
 ) : ViewModel() {
 
-    private val movieDetailViewStateEmitter = MutableLiveData<MovieDetailViewState>()
-    val movieDetailViewState: LiveData<MovieDetailViewState> = movieDetailViewStateEmitter
+    private val movieDetailViewStateEmitter = MutableStateFlow<MovieDetailViewState>(MovieDetailViewState.Loading)
+    val movieDetailViewState = movieDetailViewStateEmitter.asStateFlow()
 
     private val movieExceptionHandler: CoroutineContext = CoroutineExceptionHandler { _, exception ->
         Timber.d("Error: " + exception.message)
@@ -36,13 +36,11 @@ class MovieDetailsViewModel @Inject constructor(
                 viewModelScope.launch(movieExceptionHandler) {
                     withContext(Dispatchers.IO) {
                         when (val result = getMovieDetailsUseCase.getMovieDetails(action.movieId)) {
-                            is MovieDetailResult.Error -> movieDetailViewStateEmitter.postValue(
+                            is MovieDetailResult.Error -> movieDetailViewStateEmitter.value =
                                 when (result.errorCode) {
                                     ErrorResult.NULL_RESPONSE -> MovieDetailViewState.ErrorUi.EmptyList
                                     ErrorResult.RESPONSE_FAILURE -> MovieDetailViewState.ErrorUi.Failure
                                 }
-
-                            )
 
                             is MovieDetailResult.Success -> {
                                 val movieDetailUI = MovieDetailUI(
@@ -51,7 +49,7 @@ class MovieDetailsViewModel @Inject constructor(
                                     overview = result.movieDetail.overview,
                                     posterPath = result.movieDetail.posterPath
                                 )
-                                movieDetailViewStateEmitter.postValue(MovieDetailViewState.Movie(data = movieDetailUI))
+                                movieDetailViewStateEmitter.value = MovieDetailViewState.Movie(data = movieDetailUI)
                             }
                         }
                     }
